@@ -69,13 +69,12 @@ class Ball(pygame.sprite.Sprite):
             # always escape and bounce away cleanly
             collision = False
             for p in players:
-                if newpos.colliderect(p.rect) == 1 and not self.hit:
+                if newpos.colliderect(p.rect):
                     angle = math.pi - angle
                     collision = True
                     break
             if not collision:
                 self.rect = newpos
-                self.hit = not self.hit
 
         self.vector = (angle, z)
 
