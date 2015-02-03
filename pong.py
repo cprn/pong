@@ -18,7 +18,7 @@ except ImportError as err:
 
 
 def load_png(name):
-    """ Load image and return image object"""
+    """Load image and return image object"""
     fullname = os.path.join('data', name)
     try:
         image = pygame.image.load(fullname)
@@ -27,7 +27,6 @@ def load_png(name):
         else:
             image = image.convert_alpha()
     except pygame.error as message:
-        print('Cannot load image:', fullname)
         raise SystemExit(message)
     return image, image.get_rect()
 
@@ -47,8 +46,7 @@ class Ball(pygame.sprite.Sprite):
         self.hit = 0
 
     def update(self, players):
-        newpos = self.calcnewpos(self.rect, self.vector)
-        self.rect = newpos
+        newpos = self.calcnewpos(self.vector)
         (angle, z) = self.vector
 
         if not self.area.contains(newpos):
@@ -71,18 +69,20 @@ class Ball(pygame.sprite.Sprite):
             # always escape and bounce away cleanly
             collision = False
             for p in players:
-                if self.rect.colliderect(p.rect) == 1 and not self.hit:
+                if newpos.colliderect(p.rect) == 1 and not self.hit:
                     angle = math.pi - angle
                     collision = True
                     break
             if not collision:
+                self.rect = newpos
                 self.hit = not self.hit
 
         self.vector = (angle, z)
 
-    def calcnewpos(self, rect, vector):
+    def calcnewpos(self, vector):
         (angle, z) = vector
         (dx, dy) = (z*math.cos(angle), z*math.sin(angle))
+        rect = self.rect
         return rect.move(dx, dy)
 
 
@@ -99,10 +99,6 @@ class Bat(pygame.sprite.Sprite):
         self.area = screen.get_rect()
         self.side = side
         self.speed = 10
-        self.state = "still"
-        self.reinit()
-
-    def reinit(self):
         self.state = "still"
         self.movepos = [0, 0]
         if self.side == "left":
@@ -137,13 +133,8 @@ def main():
         background.fill((0, 0, 0))
 
         # Initialise players
-        global player1
-        global player2
         player1 = Bat("left")
         player2 = Bat("right")
-        # Deflate the rectangles so you can't catch a ball behind the bat
-        player1.rect.inflate(-5, -5)
-        player2.rect.inflate(-5, -5)
 
         # Initialise ball
         speed = 13
